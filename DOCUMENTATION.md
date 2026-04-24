@@ -244,7 +244,7 @@ The loop trains:
 chmod +x run_all_night.sh
 ./run_all_night.sh
 ```
- 
+
 ---
  
 ## 9. Viewer Scripts
