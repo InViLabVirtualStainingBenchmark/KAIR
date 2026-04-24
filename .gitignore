@@ -1,0 +1,140 @@
+# -----------------------------
+# KAIR / SWINIR PROJECT IGNORE
+# -----------------------------
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# -----------------------------
+# DATASETS (DO NOT PUSH)
+# -----------------------------
+data/
+datasets/
+trainsets/
+testsets/
+dataset/
+dataset_*/
+*.lmdb
+*.mdb
+
+# -----------------------------
+# TRAINING OUTPUTS
+# -----------------------------
+results/
+outputs/
+logs/
+checkpoints/
+*.pth
+*.pt
+
+# SwinIR / KAIR generated folders
+denoising/
+superresolution/
+swinir_*/
+*_swinir*/
+*_denoise*/
+*_sr*/
+*_x4*/
+
+# -----------------------------
+# PROJECT-SPECIFIC IGNORE
+# -----------------------------
+comparison_results/
+comparison_he_denoised/
+comparison_he_denoised_labeled/
+comparison_*/
+
+# Uformer outputs
+Uformer_*/
+*/Uformer_*/
+
+# Restormer outputs
+Restormer_*/
+*/Restormer_*/
+
+# -----------------------------
+# IDE / EDITOR
+# -----------------------------
+.idea/
+.vscode/
+*.xml
+
+# -----------------------------
+# Build / Packaging
+# -----------------------------
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# -----------------------------
+# Jupyter
+# -----------------------------
+.ipynb_checkpoints/
+
+# -----------------------------
+# Coverage / Testing
+# -----------------------------
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# -----------------------------
+# Misc
+# -----------------------------
+*.manifest
+*.spec
+*.mo
+*.pot
+*.sage.py
+.pybuilder/
+target/
+scrapy/
+webassets-cache/
+site/
+mypy_cache/
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
