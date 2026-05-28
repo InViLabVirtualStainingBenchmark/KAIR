@@ -61,15 +61,15 @@
     , "G_optimizer_clipgrad": null
     , "G_optimizer_reuse": true
     , "G_scheduler_type": "MultiStepLR"
-    , "G_scheduler_milestones": [150000]
+    , "G_scheduler_milestones": [50000]
     , "G_scheduler_gamma": 0.5
     , "G_regularizer_orthstep": null
     , "G_regularizer_clipstep": null
     , "G_param_strict": true
     , "E_param_strict": true
-    , "train_iter": 150000
+    , "train_iter": 50000
     , "checkpoint_test": 1000
-    , "checkpoint_save": 10000
+    , "checkpoint_save": 15000
     , "checkpoint_print": 100
   }
 }
