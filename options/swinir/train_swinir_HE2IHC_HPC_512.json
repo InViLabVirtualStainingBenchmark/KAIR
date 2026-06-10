@@ -1,5 +1,5 @@
 {
-  "task": "swinir_HE2IHC_MIST_ER"
+  "task": "swinir_HE2IHC"
   , "model": "plain"
   , "gpu_ids": [0]
   , "dist": false
@@ -13,8 +13,8 @@
     "train": {
       "name": "train_dataset"
       , "dataset_type": "plain"
-      , "dataroot_H": "/tmp/mist/train_IHC"
-      , "dataroot_L": "/tmp/mist/train_HE"
+      , "dataroot_H": "/tmp/bci/train_IHC"
+      , "dataroot_L": "/tmp/bci/train_HE"
       , "H_size": 128
       , "sigma": 0
       , "sigma_test": 0
@@ -25,8 +25,8 @@
     , "test": {
       "name": "test_dataset"
       , "dataset_type": "plain"
-      , "dataroot_H": "/tmp/mist/val_IHC"
-      , "dataroot_L": "/tmp/mist/val_HE"
+      , "dataroot_H": "/tmp/bci/val_IHC"
+      , "dataroot_L": "/tmp/bci/val_HE"
       , "sigma": 0
       , "sigma_test": 0
     }
@@ -63,7 +63,7 @@
     , "G_regularizer_clipstep": null
     , "G_param_strict": true
     , "E_param_strict": true
-    , "train_iter": 50000
+    , "train_iter": 100000
     , "checkpoint_test": 5000
     , "checkpoint_save": 15000
     , "checkpoint_print": 100

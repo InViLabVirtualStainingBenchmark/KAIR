@@ -7,8 +7,8 @@ import cv2
 # from torchvision.utils import make_grid
 from datetime import datetime
 # import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt  # disabled for ROCm container
+# from mpl_toolkits.mplot3d import Axes3D  # disabled for ROCm container
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
