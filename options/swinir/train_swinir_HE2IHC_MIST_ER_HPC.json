@@ -1,0 +1,71 @@
+{
+  "task": "swinir_HE2IHC_MIST_ER"
+  , "model": "plain"
+  , "gpu_ids": [0]
+  , "dist": false
+  , "n_channels": 3
+  , "path": {
+    "root": "/output"
+    , "pretrained_netG": null
+    , "pretrained_netE": null
+  }
+  , "datasets": {
+    "train": {
+      "name": "train_dataset"
+      , "dataset_type": "plain"
+      , "dataroot_H": "/tmp/mist/train_IHC"
+      , "dataroot_L": "/tmp/mist/train_HE"
+      , "H_size": 128
+      , "sigma": 0
+      , "sigma_test": 0
+      , "dataloader_shuffle": true
+      , "dataloader_num_workers": 8
+      , "dataloader_batch_size": 8
+    }
+    , "test": {
+      "name": "test_dataset"
+      , "dataset_type": "plain"
+      , "dataroot_H": "/tmp/mist/val_IHC"
+      , "dataroot_L": "/tmp/mist/val_HE"
+      , "sigma": 0
+      , "sigma_test": 0
+    }
+  }
+  , "netG": {
+    "net_type": "swinir"
+    , "upscale": 1
+    , "in_chans": 3
+    , "img_size": 128
+    , "window_size": 8
+    , "img_range": 1.0
+    , "depths": [6, 6, 6, 6, 6, 6]
+    , "embed_dim": 128
+    , "num_heads": [4, 4, 4, 4, 4, 4]
+    , "mlp_ratio": 2
+    , "upsampler": null
+    , "resi_connection": "1conv"
+    , "init_type": "default"
+  }
+  , "train": {
+    "G_lossfn_type": "charbonnier"
+    , "G_lossfn_weight": 1.0
+    , "G_charbonnier_eps": 1e-9
+    , "E_decay": 0.999
+    , "G_optimizer_type": "adam"
+    , "G_optimizer_lr": 2e-4
+    , "G_optimizer_wd": 0
+    , "G_optimizer_clipgrad": null
+    , "G_optimizer_reuse": true
+    , "G_scheduler_type": "MultiStepLR"
+    , "G_scheduler_milestones": [50000]
+    , "G_scheduler_gamma": 0.5
+    , "G_regularizer_orthstep": null
+    , "G_regularizer_clipstep": null
+    , "G_param_strict": true
+    , "E_param_strict": true
+    , "train_iter": 50000
+    , "checkpoint_test": 5000
+    , "checkpoint_save": 15000
+    , "checkpoint_print": 100
+  }
+}
