@@ -138,16 +138,18 @@ The inner container script (`train_kair_HE2IHC.sh` at repo root) sets PYTHONPATH
 
 ```
 hpc/
-├── train_kair_BCI.sh                ← BCI training (ampere_gpu)
-├── train_kair_HE2IHC_MIST_ER.sh
-├── train_kair_HE2IHC_MIST_HER2.sh
-├── train_kair_HE2IHC_MIST_Ki67.sh
-├── train_kair_HE2IHC_MIST_PR.sh
+├── train_kair_BCI.sh                ← BCI benchmark training
+├── train_kair_HE2IHC_MIST_*.sh     ← MIST benchmark training
 ├── run_benchmark_BCI_kair.sh        ← BCI inference
 ├── run_benchmark_MIST_kair.sh       ← MIST inference
-└── eval_kair_BCI_benchmark.sh       ← BCI evaluation
+├── eval_kair_BCI_benchmark.sh       ← BCI evaluation
+└── exploration/                     ← early experiments (not benchmark)
+    ├── train_kair_HE_denoise*.sh    ← HE denoising experiments
+    └── train_kair_IHC_denoise*.sh   ← IHC denoising experiments
 ```
-
+The exploration/ scripts use the denoising task (dataset_type: dncnn) and
+were run early in the project to test SwinIR's denoising capability on pathology images before 
+committing to the HE2IHC translation task as the benchmark task.
 ### Training Configs
 
 | Config | Dataset | Iterations |
@@ -162,7 +164,11 @@ hpc/
 
 **BCI:**
 ```bash
+# From jobs/ directory
 sbatch $VSC_DATA/projects/jobs/train_kair_BCI.sh
+
+# Or from repo hpc/ folder
+sbatch hpc/train_kair_BCI.sh
 ```
 
 **MIST (all 4 biomarkers):**
