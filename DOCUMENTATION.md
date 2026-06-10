@@ -1,331 +1,175 @@
-                                                                                                                                                                                                                                                                                                                                                       
-# SWINIR: Denoising, Image-to-Image, Super-Resolution & Automation Pipeline
- 
-**Hybrid Technical + Researcher-Friendly Documentation** 
-**Author:** Aisosa and Lesley
-**GPU:** RTX 4080 (16GB) 
-**OS:** Ubuntu 22.04 
-**Environment:** `vs_ua` (Conda)
- 
+--- 
+# KAIR/SwinIR: BCI Virtual Staining
+Local setup and initial training for H&E → IHC translation · BCI & MIST Datasets · Thomas's PC
+
+> **Note:** This documents the local development setup used on Thomas's PC before HPC training.
+> For HPC training, inference, and evaluation on the CalcUA cluster, see [HPC-INSTRUCTION.md](HPC-INSTRUCTION.md).
+> See the [official KAIR repository](https://github.com/cszn/KAIR) for the original codebase.
+
 ---
- 
-## 1. Hardware & Environment
- 
-### Hardware
-- Ubuntu 22.04
-- NVIDIA RTX 4080 (16GB VRAM)
-- Python 3.9
-- Conda environment: `vs_ua`
-### Repository Structure
- 
-```
-~/virtual_stain/
-   data/
-   repos/
-       KAIR/
-       SwinIR/
-       Uformer/
-       Restormer/
-   scripts/
-   outputs/
-   run_all_night.sh
-```
- 
-### Why We Use KAIR Instead of the SwinIR Repo
- 
-**KAIR = the official training framework for SwinIR.** 
-The standalone SwinIR repo only supports inference, not training.
- 
-✔ **KAIR contains:**
-- `main_train_psnr.py` → the ONLY correct SwinIR training script
-- `options/swinir/*.json` → training configs
-- Dataset loaders for `dncnn`, `sr`, `plain`, etc.
-- Model definitions for SwinIR
-✔ **The SwinIR repo contains:**
-- Pretrained models
-- Inference scripts
-- No training pipeline
-> ➡**All SwinIR training MUST be done inside KAIR.**
- 
+
+## 1. Project Goal
+
+This adapts SwinIR (Swin Transformer for Image Restoration) via the KAIR training framework to perform **virtual histological staining**:
+
+- **Input:** H&E stained histology tiles
+- **Output:** IHC stained equivalents
+
+Trained and evaluated on the **BCI** and **MIST** datasets as part of the InViLab Virtual Staining Benchmark.
+
+> **Why KAIR instead of the SwinIR repo?** The standalone SwinIR repository only supports inference with pretrained models. KAIR is the official training framework for SwinIR — it contains `main_train_psnr.py`, all training configs, and dataset loaders. All SwinIR training must be done inside KAIR.
+
 ---
- 
-## 2. Dataset Structure (BCI)
- 
-```
-/home/virtual_stain/data/BCI/
-   HE/
-       train/
-       test/
-   IHC/
-       train/
-       test/
-```
- 
-### Paired or Unpaired?
- 
-✔ **BCI is a paired dataset.** 
-Every HE image has a matching IHC image with the same filename.
- 
-This is required for:
-- HE-denoiser
-- IHC-denoiser
-- SR ×4
-- Uformer HE→IHC
-- Image-to-Image SwinIR (HE2IHC)
----
- 
-## 3. SwinIR Tasks Implemented
- 
-### 1. Denoising (HE & IHC)
-- Removes noise, keeps structure
-- Paired dataset
-- Uses `dataset_type: dncnn`
-### 2. Image-to-Image (HE → IHC)
-- The HE2IHC model
-- Uses SwinIR as a paired translator
-- Uses `dataset_type: plain`
-- Requires `dataroot_L` (input) and `dataroot_H` (target)
-### 3. Super-Resolution ×4 (HE)
-- Upscales HE images by 4×
-- Sharpens nuclei, improves Uformer virtual staining
-- Uses `dataset_type: sr`
-- Uses `"upscale": 4`
----
- 
-## 4. What SR ×4 Means
- 
-**SR ×4 = Super-Resolution by a factor of 4.**
- 
-| Input | Output |
-|-------|--------|
-| 256×256 | 1024×1024 |
- 
-✔ More detail 
-✔ Sharper nuclei 
-✔ Better IHC translation 
-✔ Heavier compute — but the RTX 4080 handles it easily
- 
----
- 
-## 5. Exact Dataset Directories Used in JSONs
- 
-### HE Denoiser
-```
-/home/virtual_stain/data/BCI/HE/train
-/home/virtual_stain/data/BCI/HE/test
-```
- 
-### IHC Denoiser
-```
-/home/virtual_stain/data/BCI/IHC/train
-/home/virtual_stain/data/BCI/IHC/test
-```
- 
-### HE2IHC (Image-to-Image)
-```
-dataroot_L = HE/train
-dataroot_H = IHC/train
-```
- 
-### SR ×4
-```
-dataroot_H = HE/train
-```
- 
----
- 
-## 6. JSON Configurations
- 
-### 6.1 `train_swinir_HE_denoise.json`
- 
-**Purpose:** Denoise HE images (paired, dncnn loader) 
-**Why we created it:** To clean HE before SR and Uformer. 
-**Location:**
-```
-~/virtual_stain/repos/KAIR/options/swinir/train_swinir_HE_denoise.json
-```
- 
-**Key edits made:**
-- Set dataset paths to BCI HE
-- Set `train_iter = 58440` (15 epochs)
-- Set `checkpoint_save = 3896`
-- Set `dataset_type = dncnn`
----
- 
-### 6.2 `train_swinir_IHC_denoise.json`
- 
-**Purpose:** Denoise IHC images (paired, dncnn loader) 
-**Why we created it:** To clean IHC for evaluation and visualization. 
-**Location:**
-```
-~/virtual_stain/repos/KAIR/options/swinir/train_swinir_IHC_denoise.json
-```
- 
-**Key edits:**
-- Changed dataset paths to BCI IHC
-- Same training schedule as HE
----
- 
-### 6.3 `train_swinir_HE2IHC.json`
- 
-**Purpose:** Image-to-Image translation (HE → IHC) 
-**Why we created it:** To test SwinIR as a paired translator. 
-**Location:**
-```
-~/virtual_stain/repos/KAIR/options/swinir/train_swinir_HE2IHC.json
-```
- 
-**Key edits:**
-- Set `dataset_type = plain`
-- Set `dataroot_L = HE/train`
-- Set `dataroot_H = IHC/train`
-- Set `upscale = 1`
----
- 
-### 6.4 `train_swinir_SR_x4.json`
- 
-**Purpose:** Super-Resolution ×4 on HE images 
-**Why we created it:** To improve Uformer virtual staining quality. 
-**Location:**
-```
-~/virtual_stain/repos/KAIR/options/swinir/train_swinir_SR_x4.json
-```
- 
-**Key edits:**
-- Set `"upscale": 4`
-- Set `"dataset_type": "sr"`
-- Set `"dataroot_H": HE/train`
-- Set `"train_iter": 58440`
----
- 
-## 7. Training Commands (Exact)
- 
-All training is run from:
+
+## 2. Environment Setup
+
+A unified conda environment is used across all models in the benchmark:
+
 ```bash
+conda activate vs_ua
+```
+
+| Component | Version |
+|-----------|---------|
+| Python | 3.9 |
+| PyTorch | 2.1.2+cu121 |
+| GPU | NVIDIA RTX 4080 (16GB VRAM) |
+| OS | Ubuntu 22.04 |
+
+---
+
+## 3. Tasks Implemented
+
+Three SwinIR tasks were explored during local development:
+
+### Task 1 — Image-to-Image Translation (HE2IHC) ← Benchmark Task
+The primary benchmark task. SwinIR is used as a paired H&E → IHC translator.
+
+- `dataset_type: plain`
+- `dataroot_L`: H&E input
+- `dataroot_H`: IHC target
+- `upscale: 1` (same resolution in/out)
+- Config: `options/swinir/train_swinir_HE2IHC.json`
+
+### Task 2 — HE Denoising (Exploration)
+Explored as a preprocessing step before virtual staining.
+
+- `dataset_type: dncnn`
+- Config: `options/swinir/train_swinir_HE_denoise.json`
+
+### Task 3 — IHC Denoising (Exploration)
+Explored for cleaning IHC images for evaluation and visualization.
+
+- `dataset_type: dncnn`
+- Config: `options/swinir/train_swinir_IHC_denoise.json`
+
+> Tasks 2 and 3 were early explorations and are not part of the final benchmark. Only the HE2IHC task was trained at full scale on HPC.
+
+---
+
+## 4. Dataset Preparation
+
+BCI is a **paired** dataset — every H&E image has a matching IHC image with the same filename.
+
+```
+data/BCI/
+├── HE/
+│   ├── train/      ← H&E input (dataroot_L)
+│   └── test/
+└── IHC/
+    ├── train/      ← IHC ground truth (dataroot_H)
+    └── test/
+```
+
+```
+data/MIST/
+├── HER2/
+│   ├── trainA/     ← H&E input
+│   ├── trainB/     ← IHC ground truth
+│   ├── valA/
+│   └── valB/
+├── ER/    (same structure)
+├── Ki67/  (same structure)
+└── PR/    (same structure)
+```
+
+> For HPC training, datasets are stored as SquashFS images with a neutral `HE/` / `IHC/` structure. See [HPC-INSTRUCTION.md](HPC-INSTRUCTION.md).
+
+---
+
+## 5. Configuration Files
+
+Local configs live in `options/swinir/` without the `_HPC` suffix. HPC configs have `_HPC` in the name.
+
+| Config | Task | Use |
+|--------|------|-----|
+| `train_swinir_HE2IHC.json` | H&E → IHC translation | Local smoke test |
+| `train_swinir_HE_denoise.json` | HE denoising | Local exploration |
+| `train_swinir_IHC_denoise.json` | IHC denoising | Local exploration |
+| `train_swinir_HE2IHC_HPC_512.json` | H&E → IHC translation | HPC BCI benchmark |
+| `train_swinir_HE2IHC_MIST_*_HPC.json` | H&E → IHC (MIST) | HPC MIST benchmark |
+
+### Key architecture parameters (HE2IHC benchmark config)
+
+| Parameter | Value |
+|-----------|-------|
+| `H_size` / `img_size` | 128 |
+| `embed_dim` | 128 |
+| `upscale` | 1 |
+| `task` | `swinir_HE2IHC` |
+| `dataset_type` | `plain` |
+
+---
+
+## 6. Training
+
+```bash
+conda activate vs_ua
 cd ~/virtual_stain/repos/KAIR
-```
- 
-### HE Denoiser
-```bash
+
+# HE2IHC (benchmark task)
+python main_train_psnr.py --opt options/swinir/train_swinir_HE2IHC.json
+
+# HE denoising (exploration)
 python main_train_psnr.py --opt options/swinir/train_swinir_HE_denoise.json
-```
- 
-### IHC Denoiser
-```bash
+
+# IHC denoising (exploration)
 python main_train_psnr.py --opt options/swinir/train_swinir_IHC_denoise.json
 ```
- 
-### HE2IHC
-```bash
-python main_train_psnr.py --opt options/swinir/train_swinir_HE2IHC.json
-```
- 
-### SR ×4
-```bash
-python main_train_psnr.py --opt options/swinir/train_swinir_SR_x4.json
-```
- 
----
- 
-## 8. Overnight Automation Script
- 
-The loop trains:
-1. IHC-denoiser
-2. HE-denoiser
-3. SR ×4
-4. Repeat forever
-**Script location:**
-```
-~/virtual_stain/run_all_night.sh
-```
- 
-**Run:**
-```bash
-chmod +x run_all_night.sh
-./run_all_night.sh
-```
+
+Full benchmark training (100k iterations) runs on HPC — see [HPC-INSTRUCTION.md](HPC-INSTRUCTION.md).
 
 ---
- 
-## 9. Viewer Scripts
- 
-### HE vs Denoised
-```
-view_he_denoised.py
-```
-Output folder: `comparison_he_denoised_labeled/`
- 
-### HE | Prediction | IHC
-```
-compare_he_ihc.py
-```
-Output folder: `comparison_results/`
- 
----
- 
-## 10. How to Switch Tasks
- 
-In KAIR, the task is controlled by `dataset_type`, `netG` settings, and the task name.
- 
-| Task | `dataset_type` | Example JSON |
-|------|---------------|--------------|
-| Denoise | `dncnn` | `train_swinir_HE_denoise.json` |
-| Deblur | `plain` | `train_swinir_car_jpeg.json` |
-| SR ×4 | `sr` | `train_swinir_SR_x4.json` |
-| Image-to-Image | `plain` | `train_swinir_HE2IHC.json` |
- 
-To switch tasks, only change:
-- `dataset_type`
-- `dataroot` paths
-- `upscale` (if SR)
-Everything else stays the same.
- 
----
- 
-## 11. Full Pipeline Summary
- 
-```
-┌──────────────┐
-│   Raw HE      │
-└──────┬───────┘
-      │
-      ▼
-┌──────────────────┐
-│ HE Denoiser       │
-└──────┬───────────┘
-      │
-      ▼
-┌──────────────────┐
-│ SR ×4 (HE)        │
-└──────┬───────────┘
-      │
-      ▼
-┌──────────────────┐
-│ Uformer HE→IHC    │
-└──────┬───────────┘
-      │
-      ▼
-┌──────────────────┐
-│ Final IHC Output  │
-└───────────────────┘
-```
- 
----
- 
-## 12. Final Check
- 
-This documentation includes:
- 
-- ✔ Denoising
-- ✔ Image-to-Image
-- ✔ SR ×4
-- ✔ Paired/unpaired explanation
-- ✔ Why KAIR is required
-- ✔ Exact dataset directories
-- ✔ What each JSON is for
-- ✔ What was edited and why
-- ✔ How to switch tasks
-- ✔ Viewer scripts
-- ✔ Automation script
-- ✔ Actual folder structure
 
+## 7. Modifications
+
+### `main_train_psnr.py`
+
+Commented out intermediate image saving during validation to reduce I/O overhead:
+
+```python
+# FROM
+util.imsave(E_img, save_img_path)
+# TO
+# util.imsave(E_img, save_img_path)
+```
+
+### `utils/utils_image.py`
+
+Minor utility modifications to support the virtual staining pipeline.
+
+---
+
+## 8. Results
+
+### Smoke Test (Local)
+
+Results from early local runs using the pretrained SwinIR model as baseline and initial fine-tuning experiments. Full benchmark results from HPC training are in [HPC-INSTRUCTION.md](HPC-INSTRUCTION.md).
+
+---
+
+## 9. Notes
+
+- **Always use KAIR for training** — the standalone SwinIR repo has no training pipeline.
+- **Task is controlled by `dataset_type`** in the JSON config — switching between denoising (`dncnn`), image-to-image (`plain`), and super-resolution (`sr`) only requires changing the config.
+- The `H_size` / `img_size` parameter was tuned to 128 for HPC training — lower values significantly reduce iteration time without major quality loss at this scale.
